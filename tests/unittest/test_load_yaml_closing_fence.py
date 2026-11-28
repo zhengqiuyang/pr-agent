@@ -76,3 +76,22 @@ def test_an_unfenced_response_parses_unchanged():
 def test_a_bare_yaml_prefix_is_still_removed():
     """Keep removing the bare 'yaml' prefix some models emit."""
     assert load_yaml("yaml\nresponse: |\n  hello\n")["response"].strip() == "hello"
+
+
+def test_recover_an_unlabelled_tilde_yaml_block_amid_prose():
+    wrapped = "Here is the answer:\n~~~\nkey: value\n~~~"
+
+    assert load_yaml(wrapped) == {"key": "value"}
+
+
+def test_recover_a_tilde_yaml_block_amid_prose():
+    wrapped = "Here is the answer:\n~~~yaml\nkey: value\n~~~"
+
+    assert load_yaml(wrapped) == {"key": "value"}
+
+
+def test_ignore_a_shorter_fence_inside_a_four_backtick_prose_block():
+    wrapped = ("Here:\n````yaml\nresponse: |\n  ```python\n  print(1)\n  ```\n````\n"
+               "Hope this helps!")
+
+    assert load_yaml(wrapped)["response"].strip() == "```python\nprint(1)\n```"
